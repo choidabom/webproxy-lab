@@ -161,11 +161,24 @@ void serve_static(int fd, char *filename, int filesize){
 
   /* Send response body to client */
   srcfd = Open(filename, O_RDONLY, 0);
+
+  
+  /* Mmap(): creates a new mapping in the virtual address space of the calling process */
   /* MAP_PRIVATE: indicate that this object(file) is ans "copy-on-write" one. (for Rio_writen)*/
   srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
   Close(srcfd);
   Rio_writen(fd, srcp, filesize);
   Munmap(srcp, filesize);
+
+  // srcfd라는 파일에 적혀있는 정보들을 srcp라는 버퍼에 읽어오는거야 . 
+  // srcp 버퍼에서 읽어와서 fd에 적어주는거야. 
+  // Homework 11.9: 정적 컨텐츠 처리할 때 요청 파일 malloc, rio_readn, rio_writen 사용하여 연결 식별자에게 복사
+  // srcp = (char *)malloc(filesize);
+  // rio_readn(srcfd, srcp, filesize);
+  // Close(srcfd);
+  // rio_writen(fd, srcp, filesize);
+   // free(srcp);
+
 }
 
 /*get_filetype - Derive file type from filename */
@@ -178,6 +191,12 @@ void get_filetype(char *filename, char *filetype){
     strcpy(filetype, "image/png");
   else if (strstr(filename, ".jpg"))
     strcpy(filetype, "image/jpeg");
+
+  // Homework 11.7: html5 not supporting "mpg file format"
+  else if (strstr(filename, ".mpg")) 
+    strcpy(filetype, "video/mpg");
+  else if (strstr(filename, ".mp4")) 
+    strcpy(filetype, "video/mp4");
   else 
     strcpy(filetype, "text/plain");
 
