@@ -57,21 +57,19 @@
 ### 11.06 일
 
 - proxy 과제 이해
-- proxy.c 구현
+- `proxy.c` 구현
 
 ### 11.07 월
 
-- tiny.c 주석 추가
-- parse_uri 구현 !
+- `tiny.c` 주석 추가
+- parse_uri() 구현 !
 
 ### 11.08 화
 
-- proxy.c Part 1 구현 완료
+- `proxy.c` proxy I: sequential 구현 완료
 
 ### 11.09 수
 
-- 
-- 
 
 ---
 
