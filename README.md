@@ -74,19 +74,7 @@
 - 
 - 
 
-
-<details><summary style="color:skyblue">Introduction</summary>
-Part 1. 
-    들어오는 요청을 수학하고 읽고 파싱(해석 및 분할)한 후 서버에 요청을 전달하고, 다시 서버로부터 받은 응답을 읽고, 최종적으로 클라이언트에 전달하는 프록시를 만든다. 첫번째 파트는 기본적인 HTTP 오퍼레이션 네트워크 통신 프로그램을 구현하기 위해 소켓을 사용하는 방법을 익히는 파트이다.
-
-Part 2. 
-    여러분이 구현한 프록시가 다수의 동시적인 요청을 처리할 수 있도록 업그레이드하게 될 것이다. 이 과제를 통해 여러분은 매우 중요한 시스템 개념인 동시성을 다루게 될 것이다.
-
-Part 3.
-    프록시에 최근에 엑세스한 웹 컨텐츠를 캐싱하는 기능을 추가할 것이다. 
-</details>
-
-
+---
 
 This directory contains the files you will need for the CS:APP Proxy Lab.
 
@@ -130,7 +118,10 @@ This directory contains the files you will need for the CS:APP Proxy Lab.
 - tiny
     Tiny Web server from the CS:APP text
 
-#### Part 1. Implementing a sequential web proxy(한 번에 하나씩 요청을 처리하는 프록시)
+--- 
+
+## Part 1. Implementing a sequential web proxy(한 번에 하나씩 요청을 처리하는 프록시)
+들어오는 요청을 수학하고 읽고 파싱(해석 및 분할)한 후 서버에 요청을 전달하고, 다시 서버로부터 받은 응답을 읽고, 최종적으로 클라이언트에 전달하는 프록시를 만든다. 첫번째 파트는 기본적인 HTTP 오퍼레이션 네트워크 통신 프로그램을 구현하기 위해 소켓을 사용하는 방법을 익히는 파트이다.
 첫번째 단계는 HTTP/1.0 요청을 처리하는 기본적인 sequential webproxy를 구현하는 것이다. POST는 선택사항.
  
 1. proxy가 실행된 이후에는 프록시는 커맨드라인에 명시된 포트로부터 들어오는 요청을 항상 대기하고 있어야한다. 
@@ -139,7 +130,7 @@ This directory contains the files you will need for the CS:APP Proxy Lab.
 4. 만약 올바른 요청으로 판단되면 적절한 웹 서버와 연결을 맺은 후 클라이언트로 받은 요청을 전달한다. 
 5. 최종적으로 proxy는 서버의 응답을 읽고 클라이언트에 전달한다. 
 
-##### 4.1 HTTP/1.0 GET requests
+### 4.1 HTTP/1.0 GET requests
 requests을 어떻게 처리하는가 
 (클라이언트 단의) 사용자가 `https://www.cmu.edu/hub/index.html`과 같은 URI을 접속하면 **브라우저는 HTTP 요청을 proxy에 보낸다.**
 
@@ -155,7 +146,7 @@ HTTP 요청의 모든 라인들은 각각 맨 뒤에 리턴문자(\r)와 개행�
 
 위의 예시에서 프록시의 요청라인은 'HTTP/1.0'으로 끝나는 반면 웹브라우저의 요청라인은 'HTTP/1.1'로 끝난다는 것을 파악했을 것이다. 현대의 웹 브라우저들을 HTTP/1.1 요청을 생성하지만, 여러분의 프록시는 HTTP/1.0 요청으로 전달해야한다.
 
-##### 4.2 Request headers (프록시가 서버한테 보낼 때)
+### 4.2 Request headers (프록시가 서버한테 보낼 때)
 이번 과제에서 중요한 요청 헤더 => `Host header`, `User-Agent header`, `Connection header`, `Proxy-Connection header`
 
 - `Host: www.cmu.edu`
@@ -169,7 +160,7 @@ HTTP 요청의 모든 라인들은 각각 맨 뒤에 리턴문자(\r)와 개행�
 
 Connection headers와 Proxy-Connection headers는 첫번재 요청/응답이 완료된 이후에도 지속적으로 살아있어야 있어야 하는지를 결정하는데 사용된다. 여러분의 프록시가 매번 요청을 받을 때마다 새로운 연결을 맺도록 권장한다. `close`로 헤더 값을 설정해놓으면 웹서버는 첫번재 요청/응답 이후 프록시와의 연결을 종료할 것이다.
 
-##### 4.3 Port numbers
+### 4.3 Port numbers
 이번 과제에서 중요한 포트 클래스 => `HTTP request ports`, `proxy's listening ports`
 
 - `HTTP request ports`는 `HTTP request` 중 URL에 있는 optional field이다.
@@ -181,10 +172,14 @@ Connection headers와 Proxy-Connection headers는 첫번재 요청/응답이 완
 
 `linux> ./proxy 15213`
 
-#### Part 2. Dealing with multiple concurrent requests
+## Part 2. Dealing with multiple concurrent requests
+여러분이 구현한 프록시가 다수의 동시적인 요청을 처리할 수 있도록 업그레이드하게 될 것이다. 이 과제를 통해 여러분은 매우 중요한 시스템 개념인 동시성을 다루게 될 것이다.
 sequential proxy를 잘 구현했다면, 동시다발적인 요청을 처리할 수 있도록 해봐.
 동시성 서버를 구현하는 가장 단순한 방법은 각각의 새로운 요청에 대해서 새로운 스레드를 생성하는 것.
 교재 12.5.5에 나오는 prethreded(사전쓰레딩) 서버와 같은 다른 디자인패턴 사용해도 됨.
 
 - threads는 메모리 누수를 피하기 위해서 반드시 detached mode로 실행되어야 한다.
 - `open_clinetfd`와 `open_listenfd`함수는 현대적이며 프로토콜에 의존하지 않는 `getaddrinfo` 함수에 기반하고 있으므로 threads safe하다. 
+
+
+## Part 3.프록시에 최근에 엑세스한 웹 컨텐츠를 캐싱하는 기능을 추가할 것이다. 
