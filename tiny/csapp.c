@@ -838,7 +838,7 @@ void rio_readinitb(rio_t *rp, int fd)
 {
     rp->rio_fd = fd;  
     rp->rio_cnt = 0;  
-    rp->rio_bufptr = rp->rio_buf;
+    rp->rio_bufptr = rp->rio_buf; // 배열의 첫 번째 포인터로 준거임 
 }
 /* $end rio_readinitb */
 

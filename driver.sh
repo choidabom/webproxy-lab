@@ -50,6 +50,7 @@ FETCH_FILE="home.html"
 #
 function download_proxy {
     cd $1
+    # --prowxy $4 옵션 줌 
     curl --max-time ${TIMEOUT} --silent --proxy $4 --output $2 $3
     (( $? == 28 )) && echo "Error: Fetch timed out after ${TIMEOUT} seconds"
     cd $HOME_DIR
@@ -203,7 +204,7 @@ fi
 trap 'echo "Timeout waiting for the server to grab the port reserved for it"; kill $$' ALRM
 
 #####
-# Basic
+# Basic => 
 #
 echo "*** Basic ***"
 

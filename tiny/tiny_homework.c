@@ -11,9 +11,9 @@
 void doit(int fd);
 void read_requesthdrs(rio_t *rp);
 int parse_uri(char *uri, char *filename, char *cgiargs);
-void serve_static(int fd, char *filename, int filesize);
+void serve_static(int fd, char *filename, int filesize, char method_flag);
 void get_filetype(char *filename, char *filetype);
-void serve_dynamic(int fd, char *filename, char *cgiargs);
+void serve_dynamic(int fd, char *filename, char *cgiargs, char method_flag);
 void clienterror(int fd, char *cause, char *errnum, char *shortmsg,
                  char *longmsg);
 
@@ -60,6 +60,7 @@ int main(int argc, char **argv) { // argc: 인자 개수, argv: 인자 배열
 void doit(int fd){
   int is_static;
   struct stat sbuf;
+  char method_flag; // Homework 11.11: 0: GET, 1: HEAD
   char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
   char filename[MAXLINE], cgiargs[MAXLINE];
   rio_t rio;
@@ -80,6 +81,10 @@ void doit(int fd){
   /* read_requesthdrs: 요청 라인을 뺀 나머지 요청 헤더들을 무시(그냥 프린트)*/
   read_requesthdrs(&rio); 
 
+
+  if (strcasecmp(method, "GET") == 0) method_flag = 0; 
+  else method_flag = 1;
+
   /* Parse URI from GET request */
   /* parse_uri: 클라이언트 요청 라인에서 받아온 uri를 이용해 정적/동적 컨텐츠를 구분한다.*/
   /* is_static이 1이면 정적 컨텐츠, 0이면 동적 컨텐츠 */
@@ -98,7 +103,7 @@ void doit(int fd){
       return ;
     }
     /* 정적 서버에 파일의 사이즈를 같이 보낸다. => Response header에 Content-length 위해 */
-    serve_static(fd, filename, sbuf.st_size);
+    serve_static(fd, filename, sbuf.st_size, method_flag);
   }
 
   /* Serve dynamic content */
@@ -109,7 +114,7 @@ void doit(int fd){
       return ;
     }
     // 동적 서버에 인자를 같이 보낸다. 
-    serve_dynamic(fd, filename, cgiargs); 
+    serve_dynamic(fd, filename, cgiargs, method_flag); 
   }
 
 }
@@ -198,7 +203,7 @@ int parse_uri(char *uri, char *filename, char *cgiargs){
   // filename: ./cgi-bin/adder
 }
 
-void serve_static(int fd, char *filename, int filesize){
+void serve_static(int fd, char *filename, int filesize, char method_flag){
   int srcfd;
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
 
@@ -211,9 +216,11 @@ void serve_static(int fd, char *filename, int filesize){
   sprintf(buf, "%sContent-type: %s\r\n\r\n", buf, filetype);
 
   /* 응답 라인과 헤더를 클라이언트에게 보냄 */
-  Rio_writen(fd, buf, strlen(buf)); // filename의 이름을 갖는 파일을 읽기 권한으로 불러온다. 
+  Rio_writen(fd, buf, strlen(buf));   
   printf("Response headers: \n");     
   printf("%s", buf);
+
+  if (method_flag) return;
 
   /* Send response body to client */
   srcfd = Open(filename, O_RDONLY, 0);
@@ -222,31 +229,13 @@ void serve_static(int fd, char *filename, int filesize){
   Rio_writen(fd, srcp, filesize);
   Munmap(srcp, filesize);
 
-
   // Homework 11.9: 정적 컨텐츠 처리할 때 요청 파일 malloc, rio_readn, rio_writen 사용하여 연결 식별자에게 복사
   // srcp = (char *)malloc(filesize);
   // rio_readn(srcfd, srcp, filesize);
   // Close(srcfd);
   // rio_writen(fd, srcp, filesize);
    // free(srcp);
-}
 
-void serve_dynamic(int fd, char *filename, char *cgiargs){
-  char buf[MAXLINE], *emptylist [] = {NULL};
-
-  /* Return first part of HTTP response */
-  sprintf(buf, "HTTP/1.0 200 OK\r\n");
-  Rio_writen(fd, buf, strlen(buf));
-  sprintf(buf, "Server: Tiny Web Server\r\n");
-  Rio_writen(fd, buf, strlen(buf));
-
-  if (Fork() == 0) { // Child
-    setenv("QUERY_STRING", cgiargs, 1);
-
-    Dup2(fd, STDOUT_FILENO);                // Redirect stdout to clinet
-    Execve(filename, emptylist, environ);   // Run CGI program
-  }
-  Wait(NULL); // Parent waits for and reaps child
 }
 
 /*get_filetype - Derive file type from filename */
@@ -270,6 +259,23 @@ void get_filetype(char *filename, char *filetype){
 
 }
 
+void serve_dynamic(int fd, char *filename, char *cgiargs, char method_flag){
+  char buf[MAXLINE], *emptylist [] = {NULL};
+
+  /* Return first part of HTTP response */
+  sprintf(buf, "HTTP/1.0 200 OK\r\n");
+  Rio_writen(fd, buf, strlen(buf));
+  sprintf(buf, "Server: Tiny Web Server\r\n");
+  Rio_writen(fd, buf, strlen(buf));
+
+  if (Fork() == 0) { // Child
+    if (method_flag) setenv("REQUEST_METHOD", cgiargs, 1);
+    setenv("QUERY_STRING", cgiargs, 1);
+
+    Dup2(fd, STDOUT_FILENO);                // Redirect stdout to clinet
+    Execve(filename, emptylist, environ);   // Run CGI program
+  }
+  Wait(NULL); // Parent waits for and reaps child
+}
 
 // 내 ip 주소: 143.248.222.78
-
