@@ -70,6 +70,14 @@
 
 ### 11.09 수
 
+- proxy I: sequential 주석 추가
+    - `parse_uri()` 예외 상황 수정 
+    - `do_response()`(server to proxy) => malloc으로 수정
+
+- proxy II: concurrent 구현 및 주석
+- proxy III: cache 도전 
+- WEEK07: BSD소켓, IP, TCP, HTTP, file descriptor, DNS 정리
+
 
 ---
 
@@ -116,10 +124,10 @@ This directory contains the files you will need for the CS:APP Proxy Lab.
     Tiny Web server from the CS:APP text
 
 --- 
+들어오는 요청을 수학하고 읽고 파싱(해석 및 분할)한 후 서버에 요청을 전달하고, 다시 서버로부터 받은 응답을 읽고, 최종적으로 클라이언트에 전달하는 프록시를 만든다. 
 
 ## Part 1. Implementing a sequential web proxy(한 번에 하나씩 요청을 처리하는 프록시)
-들어오는 요청을 수학하고 읽고 파싱(해석 및 분할)한 후 서버에 요청을 전달하고, 다시 서버로부터 받은 응답을 읽고, 최종적으로 클라이언트에 전달하는 프록시를 만든다. 첫번째 파트는 기본적인 HTTP 오퍼레이션 네트워크 통신 프로그램을 구현하기 위해 소켓을 사용하는 방법을 익히는 파트이다.
-첫번째 단계는 HTTP/1.0 요청을 처리하는 기본적인 sequential webproxy를 구현하는 것이다. POST는 선택사항.
+첫번째 단계는 HTTP/1.0 GET 요청을 처리하는 기본적인 **sequential webproxy**를 구현하는 것이다. (POST는 선택사항. 구현 시 고려 안 함)
  
 1. proxy가 실행된 이후에는 프록시는 커맨드라인에 명시된 포트로부터 들어오는 요청을 항상 대기하고 있어야한다. 
 2. 연결이 맺어지면 proxy는 클라이언트의 요청을 읽고 파싱(해석 및 분할)해야한다.
@@ -141,7 +149,10 @@ requests을 어떻게 처리하는가
 명심하라.
 HTTP 요청의 모든 라인들은 각각 맨 뒤에 리턴문자(\r)와 개행문자(\n)가 붙는다. 또한 모든 HTTP 요청은 반드시 '\r\n'으로 끝나야 한다.
 
-위의 예시에서 프록시의 요청라인은 'HTTP/1.0'으로 끝나는 반면 웹브라우저의 요청라인은 'HTTP/1.1'로 끝난다는 것을 파악했을 것이다. 현대의 웹 브라우저들을 HTTP/1.1 요청을 생성하지만, 여러분의 프록시는 HTTP/1.0 요청으로 전달해야한다.
+위의 예시에서 프록시의 요청라인은 'HTTP/1.0'으로 끝나는 반면 웹브라우저의 요청라인은 'HTTP/1.1'로 끝난다는 것을 파악했을 것이다. 현대의 웹 브라우저들을 HTTP/1.1 요청을 생성하지만, 여러분의 프록시는 HTTP/1.0 요청으로 전달해야한다. 
+
+- => 즉, 과제에서의 `프록시 to 서버`는 `HTTP/1.0 요청`만 보낼 수 있음 
+- [HTTP/1.0과 HTTP/1.1의 차이점](https://withbundo.blogspot.com/2021/02/http-http-10-http-11.html)
 
 ### 4.2 Request headers (프록시가 서버한테 보낼 때)
 이번 과제에서 중요한 요청 헤더 => `Host header`, `User-Agent header`, `Connection header`, `Proxy-Connection header`
@@ -155,14 +166,18 @@ HTTP 요청의 모든 라인들은 각각 맨 뒤에 리턴문자(\r)와 개행�
 - `Proxy-Connection: close`
     => Always send Proxy-Connection header
 
-Connection headers와 Proxy-Connection headers는 첫번재 요청/응답이 완료된 이후에도 지속적으로 살아있어야 있어야 하는지를 결정하는데 사용된다. 여러분의 프록시가 매번 요청을 받을 때마다 새로운 연결을 맺도록 권장한다. `close`로 헤더 값을 설정해놓으면 웹서버는 첫번재 요청/응답 이후 프록시와의 연결을 종료할 것이다.
+Connection headers와 Proxy-Connection headers는 첫번재 요청/응답이 완료된 이후에도 지속적으로 살아있어야 있어야 하는지를 결정하는데 사용된다. **여러분의 프록시가 매번 요청을 받을 때마다 새로운 연결을 맺도록 권장한다.** `close`로 헤더 값을 설정해놓으면 웹서버는 첫번재 요청/응답 이후 프록시와의 연결을 종료할 것이다. 
+
+=> HTTP/1.0은 요청 컨텐츠마다 TCP 세션을 맺어야 함 (1 GET/1 CONNECTION)
 
 ### 4.3 Port numbers
 이번 과제에서 중요한 포트 클래스 => `HTTP request ports`, `proxy's listening ports`
 
 - `HTTP request ports`는 `HTTP request` 중 URL에 있는 optional field이다.
 - `http://www.cmu.edu:8080/hub/index.html` 이렇게 생긴 URI은 프록시가 `www.cmu.edu`라는 호스트와 연결을 맺었을 때 HTTP 기본 포트인 80 포트 대신에 8080 포트로 연결을 맺어야한다는 의미.
-- 여러분의 프록시는 포트 번호가 URI에 포함되어있지 않든 정상적으로 동작해야한다.
+- 여러분의 프록시는 포트 번호가 URI에 포함되어있지 않든 정상적으로 동작해야한다. 
+
+=> 포트 번호가 URI에 포함되어 있지 않으면 기본 포트를 80으로 지정하라는 의미
 
 - `proxy's listening ports`는 프록시가 자신에게 들어오는 연결 요청들을 대기하고 있는 포트이다.
 - 프록시는 커맨드 라인 인자로 받은 listening ports를 수락해야한다. 예를 들어 다음과 같은 커맨드를 받으면 프록시는 15213 포트의 연결을 대기해야한다.
@@ -180,3 +195,13 @@ sequential proxy를 잘 구현했다면, 동시다발적인 요청을 처리할 
 
 
 ## Part 3.프록시에 최근에 엑세스한 웹 컨텐츠를 캐싱하는 기능을 추가할 것이다. 
+
+
+## 테스팅과 디버깅
+### curl
+0. tiny 터미널 => `./tiny 8000` 실행, proxy 터미널 => `./proxy 7777` 실행
+1. webproxy 폴더가 있는 경로에서 `mkdir testing`
+2. `cd testing`
+3. tiny 터미널과 proxy 터미널이 아닌 새로운 터미널을 하나 열어줌
+4. 현재 위치가 testing 폴더일 때 `curl --proxy http://localhost:7777 --output home.html http://localhost:8000/home.html`
+5. 실행 후, client에서 요청된 파일이 proxy를 거쳐 서버에 요청이 잘 됨과 동시에 서버의 응답이 proxy를 거쳐 client에 왔다는 것을 **testing에 home.html 파일이 만들어진 것으로 확인할 수 있다.**
