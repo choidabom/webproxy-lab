@@ -20,7 +20,7 @@ void clienterror(int fd, char *cause, char *errnum, char *shortmsg,
 /* port 번호를 인자로 받는다. */
 int main(int argc, char **argv) { // argc: 인자 개수, argv: 인자 배열
   // argv는 main 함수가 받은 각각의 인자들
-  // ./tiny 8000 => argv[0] = ./tiny, argv[1] => 8000 
+  // 예시) ./tiny 8000 => argv[0] = ./tiny, argv[1] => 8000 
   // 메인함수에 전달되는 정보의 개수가 2개여야함 (argv[0]: 실행경로, argv[1]: port num)
 
   int listenfd, connfd;
@@ -256,7 +256,7 @@ void get_filetype(char *filename, char *filetype){
     strcpy(filetype, "video/mp4");
   else 
     strcpy(filetype, "text/plain");
-
+ 
 }
 
 void serve_dynamic(int fd, char *filename, char *cgiargs, char method_flag){
