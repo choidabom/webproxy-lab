@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test</title>
+        <script>
+            function change()
+            {
+                let arg1 = document.getElementById("first").value;
+                let arg2 = document.getElementById("second").value;
+                document.location.href=`./cgi-bin/adder?${arg1}&${arg2}`; 
+            }
+        </script>
+        <style>
+            .cityvideo{
+                width: 100%;
+                max-width: 100%,;
+                height: auto;
+            }
+        </style>
+    </head>
+    <body> 
+        <video class="cityvideo" autoplay muted controls align="middle" src="city.mp4"></video>
+        <p>NewYork City ~?</p>
+        <input type = "text" id="first" size="10">
+        <input type = "text" id="second" size="10">
+        <button onclick="change()">adder</button>
+    </body>
+</html>
