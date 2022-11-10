@@ -75,6 +75,8 @@
 
 - proxy II: concurrent 구현 및 주석
 - proxy III: cache 도전 
+
+### 11.10 목
 - WEEK07: BSD소켓, IP, TCP, HTTP, file descriptor, DNS 정리
 
 ---
@@ -190,9 +192,6 @@ sequential proxy를 잘 구현했다면, 동시다발적인 요청을 처리할 
 
 - threads는 메모리 누수를 피하기 위해서 반드시 detached mode로 실행되어야 한다.
 - `open_clinetfd`와 `open_listenfd`함수는 현대적이며 프로토콜에 의존하지 않는 `getaddrinfo` 함수에 기반하고 있으므로 threads safe하다. 
-
-
-## Part 3.프록시에 최근에 엑세스한 웹 컨텐츠를 캐싱하는 기능을 추가할 것이다. 
 
 
 ## 테스팅과 디버깅
