@@ -40,8 +40,11 @@ int main(int argc, char **argv) {
   /* Check command line args */
   if (argc != 2) {  
     fprintf(stderr, "usage: %s <port>\n", argv[0]);
-    exit(1);
+    exit(1);    // exit(0) => exit(1) 수정
   }
+// Review from PGJ
+// exit 함수의 경우 통상적으로 정상적인 종료를 했을 경우 0 값을 반환하고, 오류로 인해 종료를 해야할 경우 0이 아닌 값들을 매게변수로 주는 것으로 알고 있습니다.
+// 코드 문맥을 봤을 때 비정상적인 종료로 인해 exit를 사용하므로 매게변수로 1을 넣어주는게 좋을 것 같습니다.
 
   /* 해당 포트 번호에 해당하는 듣기 소켓 식별자를 열어준다. */
   listenfd = Open_listenfd(argv[1]);
