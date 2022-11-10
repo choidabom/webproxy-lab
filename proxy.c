@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   /* Check command line args */
   if (argc != 2) {  
     fprintf(stderr, "usage: %s <port>\n", argv[0]);
-    exit(0);
+    exit(1);
   }
 
   /* 해당 포트 번호에 해당하는 듣기 소켓 식별자를 열어준다. */
