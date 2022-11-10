@@ -72,12 +72,10 @@
 
 - proxy I: sequential 주석 추가
     - `parse_uri()` 예외 상황 수정 
-    - `do_response()`(server to proxy) => malloc으로 수정
 
 - proxy II: concurrent 구현 및 주석
 - proxy III: cache 도전 
 - WEEK07: BSD소켓, IP, TCP, HTTP, file descriptor, DNS 정리
-
 
 ---
 
